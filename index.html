@@ -47,10 +47,10 @@
 [data-theme="aurora"]{--primary:#a855f7;--primary-dark:#db2777;--primary-light:#fae8ff;--primary-glass:rgba(168,85,247,.12);--sidebar-grad-1:#4a044e;--sidebar-grad-2:#831843}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{font-size:16px;-webkit-text-size-adjust:100%}
-body{font-family:var(--font);background:var(--g100);color:var(--g800);line-height:1.5;overflow-x:hidden;min-height:100vh}
+body{font-family:var(--font);background:var(--g100);color:var(--g800);line-height:1.5;overflow-x:hidden;min-height:100vh;min-height:calc(var(--vh,1vh)*100);min-height:100dvh}
 button,input,select{font-family:inherit}
-.app{display:flex;min-height:100vh}
-.sidebar{width:var(--sw);height:100vh;background:linear-gradient(180deg,var(--sidebar-grad-1) 0%,var(--sidebar-grad-2) 100%);position:fixed;left:0;top:0;display:flex;flex-direction:column;z-index:300;transition:var(--tx);overflow:hidden}
+.app{display:flex;min-height:100vh;min-height:calc(var(--vh,1vh)*100);min-height:100dvh}
+.sidebar{width:var(--sw);height:100vh;height:calc(var(--vh,1vh)*100);height:100dvh;background:linear-gradient(180deg,var(--sidebar-grad-1) 0%,var(--sidebar-grad-2) 100%);position:fixed;left:0;top:0;display:flex;flex-direction:column;z-index:300;transition:var(--tx);overflow:hidden}
 .sidebar.collapsed{width:60px}
 .brand{display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid var(--panel-overlay-weak);min-height:var(--hh);overflow:hidden;position:relative}
 .brand-icon{width:38px;height:38px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
@@ -60,7 +60,7 @@ button,input,select{font-family:inherit}
 .sidebar.collapsed .brand-info{opacity:0;width:0}
 .tog{position:absolute;right:-11px;top:50%;transform:translateY(-50%);width:22px;height:22px;background:var(--primary);border:none;border-radius:50%;color:#fff;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(37,99,235,.5);z-index:10;transition:var(--tx)}
 .tog:hover{transform:translateY(-50%) scale(1.15)}
-.nav-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:10px 0;scrollbar-width:thin;scrollbar-color:var(--panel-overlay-weak) transparent}
+.nav-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:10px 0;scrollbar-width:thin;scrollbar-color:var(--panel-overlay-weak) transparent}
 .nav-scroll::-webkit-scrollbar{width:3px}
 .nav-scroll::-webkit-scrollbar-thumb{background:var(--panel-overlay-weak);border-radius:2px}
 .nav-sec{padding:8px 10px 2px}
@@ -96,7 +96,7 @@ button,input,select{font-family:inherit}
 .btn-so:hover{background:rgba(239,68,68,.1)}
 .sidebar.collapsed .btn-so .lbl{opacity:0;width:0}
 .copy-yr{text-align:center;font-size:9px;color:var(--panel-text-faint2);margin-top:8px;letter-spacing:.06em}
-.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh;transition:var(--tx)}
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh;min-height:calc(var(--vh,1vh)*100);min-height:100dvh;transition:var(--tx)}
 .main.expanded{margin-left:60px}
 .header{height:var(--hh);background:var(--surface);display:flex;align-items:center;padding:0 20px;position:sticky;top:0;z-index:100;gap:12px;box-shadow:var(--shadow-md);border-radius:0 0 18px 18px}
 .header::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--primary),var(--primary-dark),var(--primary));background-size:200% 100%;animation:accentShift 6s ease-in-out infinite;border-radius:18px 18px 0 0}
@@ -114,7 +114,7 @@ button,input,select{font-family:inherit}
 .btn-outline:hover{background:var(--g200)}
 .btn-sm{padding:7px 12px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--g200);background:var(--g50);color:var(--g700);display:inline-flex;align-items:center;gap:5px;transition:var(--tx);white-space:nowrap}
 .btn-sm:hover{background:var(--g100)}
-.page{flex:1;padding:20px;overflow-y:auto}
+.page{flex:1;min-height:0;padding:20px;overflow-y:auto}
 .view{animation:fadeUp .22s ease}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .hidden{display:none!important}
@@ -2230,6 +2230,21 @@ async function init() {
   document.getElementById('m-'+S.month)?.classList.add('active');
   await loadDash(S.month);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   REAL VIEWPORT HEIGHT (mobile browser toolbar / WebView fix)
+   100vh on mobile browsers is often taller than what's actually
+   visible (it ignores the address bar / nav bar), which clips the
+   bottom of fixed-height elements like the sidebar. We measure the
+   real, visible height with JS and expose it as --vh.
+══════════════════════════════════════════════════════════════ */
+function setRealVH(){
+  document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px');
+}
+setRealVH();
+window.addEventListener('resize', setRealVH);
+window.addEventListener('orientationchange', ()=>setTimeout(setRealVH,120));
+if (window.visualViewport) window.visualViewport.addEventListener('resize', setRealVH);
 
 document.addEventListener('DOMContentLoaded', init);
 </script>
